@@ -30,6 +30,7 @@ class Main():
         self.bodyTemperatureProxy = ALProxy("ALBodyTemperature")
         self.trackerProxy = ALProxy("ALTracker")
         
+
         # --------------------------------------------------------------- start program ------------------------------
         # objecten maken van alle pepper klasses
         self.pepperHead = PepperHead(self.motionProxy)
@@ -67,8 +68,8 @@ class Main():
         else:
             print("Connection failed")
 
-    # -------------------------------- new message ---------------------------------
 
+    # -------------------------------- new message ---------------------------------
     def on_message(self, client, userdata, msg):
         try:
             payload = json.loads(msg.payload)
@@ -302,13 +303,11 @@ class PythonCallback(ALModule):
         main.memoryProxy.subscribeToEvent("FaceDetected", "pythonCallback", "faceIsDetected")
 
 
-    @staticmethod
-    def subscribeToFace():
+    def subscribeToFace(self):
         main.memoryProxy.subscribeToEvent("FaceDetected", "pythonCallback", "faceIsDetected")
 
 
-    @staticmethod
-    def unsubscribeToFace():
+    def unsubscribeToFace(self):
         main.memoryProxy.unsubscribeToEvent("FaceDetected", "pythonCallback")
 
 
@@ -322,13 +321,16 @@ if __name__ == "__main__":
 
         main.memoryProxy.subscribeToEvent("TemperatureStatusChanged", "pythonCallback", "temperatureChanged") 
         main.memoryProxy.subscribeToEvent("HotDeviceDetected", "pythonCallback", "deviceIsHot") 
-
+        pythonCallback.subscribeToFace()
 
         while True:
             time.sleep(1)
 
     
     except KeyboardInterrupt:
+        print("keyboardInterrupt")
+
+    finally:
         print("Shutting down")
         main.postureProxy.goToPosture("Stand", 0.2)
         main.trackFace.stopTrackingFace()
