@@ -10,14 +10,13 @@ from Models.PepperBehaviors import PepperBehaviors
 from Models.TrackFace import TrackFace
 import json
 
-sayWhenFaceDetected = None
-pythonCallback = None
+facesDetectedBool = False
 
 class Main():
     def __init__(self, MQTTbrokerIp, MQTTbrokerPort=1883):
         # ------------------------------------------------------------------------- NAOqi -------------------------------------------------------------
         # Proxys maken van de naoqi api
-        self.brokerProxy = ALBroker("pythonBroker", "0.0.0.0", 0, "pepper.local", 9559)
+        self.brokerProxy = ALBroker("pythonBroker", "0.0.0.0", 0, "127.0.0.1", 9559)
         # ip en poort moeten niet meer gebruikt worden omdat we ALBroker gebruiken
         self.motionProxy = ALProxy("ALMotion")
         self.ttsProxy = ALProxy("ALTextToSpeech")
@@ -32,6 +31,8 @@ class Main():
         
 
         # --------------------------------------------------------------- start program ------------------------------
+        self.start_MQTT(MQTTbrokerIp, MQTTbrokerPort)
+
         # objecten maken van alle pepper klasses
         self.pepperHead = PepperHead(self.motionProxy)
         self.pepperBody = PepperBody(self.motionProxy)
@@ -45,7 +46,6 @@ class Main():
         # wakes pepper up and set stiffness on
         self.motionProxy.wakeUp()
         self.postureProxy.goToPosture("Stand", 0.2)
-        self.start_MQTT(MQTTbrokerIp, MQTTbrokerPort)
 
 
     # --------------------------------------------------------------- MQTT -----------------------------------------------------------------    
@@ -83,7 +83,7 @@ class Main():
         # -------------------- actions -------------------
         if action == "speak":               # lees de payload voor
             if payload.get("speak"):
-                self.ttsProxy.say(str(payload.get("speak")))
+                self.ttsProxy.post.say(str(payload.get("speak")))
             else:
                 print("Geen speak payload")
 
@@ -107,13 +107,13 @@ class Main():
         elif action == "detectFaceStart":
             if payload.get("speak") and payload.get("times"):
                 self.payloadFaceDetected = payload          # payload opslaan zodat hij dat later in de callback class kan gebruiken
-                pythonCallback.subscribeToFace()            # subscibes met callbacks werken alleen in de PythenCallback class
+                self.memoryProxy.subscribeToEvent("FaceDetected", "pythonCallback", "faceIsDetected")            
             else:
                 print("Geen speak of times payload")
 
 
         elif action == "detectFaceStop":
-            pythonCallback.unsubscribeToFace()
+            self.memoryProxy.unsubscribeToEvent("FaceDetected", "pythonCallback")
 
 
         elif action == "startFollowMode":
@@ -167,7 +167,7 @@ class Main():
                 print("Geen xValue en yValue payloads")
 
         elif action == "defaultStand":            # ga naar zijn default stand
-            self.postureProxy.goToPosture("Stand", 0.2)
+            self.postureProxy.post.goToPosture("Stand", 0.2)
 
 
         elif action == "moveHeadManually":      # de head joints aansturen
@@ -282,53 +282,56 @@ class PythonCallback(ALModule):
         
 
     def faceIsDetected(self, *_args):
-        # Unsubscribe to the event when talking,
-        # to avoid repetitions
-        main.memoryProxy.unsubscribeToEvent("FaceDetected", "pythonCallback")
+        global facesDetectedBool
+        if facesDetectedBool == False:
+            facesDetectedBool = True      # switch de var van False naar True of omgekeerd
+        else:
+            facesDetectedBool = False
 
-        say = main.payloadFaceDetected.get("speak")
-        leftRightArm = main.payloadFaceDetected.get("leftRightArm")
-        ShoulderPitch = main.payloadFaceDetected.get("ShoulderPitch")
-        ShoulderRoll = main.payloadFaceDetected.get("ShoulderRoll")
-        ElbowYaw = main.payloadFaceDetected.get("ElbowYaw")
-        ElbowRoll = main.payloadFaceDetected.get("ElbowRoll")
-        WristYaw = main.payloadFaceDetected.get("WristYaw")
-        Hand = main.payloadFaceDetected.get("Hand")
-        times = main.payloadFaceDetected.get("times")
+        print("Face detected, facesDetectedBool: ", facesDetectedBool)
+        if facesDetectedBool == True:              # pepper herkent een gezicht altijd 2 keer, we willen de message maar 1 keer
+            # Unsubscribe to the event when talking,
+            # to avoid repetitions
+            main.memoryProxy.unsubscribeToEvent("FaceDetected", "pythonCallback")
 
-        main.ttsProxy.say(say)
-        self.pepperArm.turnArmInterpolations(leftRightArm, ShoulderPitch, ShoulderRoll, ElbowYaw, ElbowRoll, WristYaw, Hand, times)
-        # Subscribe again to the event
-        time.sleep(5)
-        main.memoryProxy.subscribeToEvent("FaceDetected", "pythonCallback", "faceIsDetected")
+            say = str(main.payloadFaceDetected.get("speak"))
+            leftRightArm = str(main.payloadFaceDetected.get("leftRightArm"))
+            ShoulderPitch = main.payloadFaceDetected.get("ShoulderPitch")
+            ShoulderRoll = main.payloadFaceDetected.get("ShoulderRoll")
+            ElbowYaw = main.payloadFaceDetected.get("ElbowYaw")
+            ElbowRoll = main.payloadFaceDetected.get("ElbowRoll")
+            WristYaw = main.payloadFaceDetected.get("WristYaw")
+            Hand = main.payloadFaceDetected.get("Hand")
+            times = main.payloadFaceDetected.get("times")
 
-
-    def subscribeToFace(self):
-        main.memoryProxy.subscribeToEvent("FaceDetected", "pythonCallback", "faceIsDetected")
-
-
-    def unsubscribeToFace(self):
-        main.memoryProxy.unsubscribeToEvent("FaceDetected", "pythonCallback")
+            main.ttsProxy.post.say(say)
+            main.pepperArm.turnArmInterpolations(leftRightArm, ShoulderPitch, ShoulderRoll, ElbowYaw, ElbowRoll, WristYaw, Hand, times)
+            time.sleep(times[-1])           # wacht tot de arm bewegingen gedaan zijn
+            main.postureProxy.goToPosture("Stand", 0.2)
+            # Subscribe again to the event
+            main.memoryProxy.subscribeToEvent("FaceDetected", "pythonCallback", "faceIsDetected")
 
 
 
 if __name__ == "__main__":
+    main = Main("13.81.105.139")
+    # Callbacks aanmaken, kan niet in een class
+
+    pythonCallback = PythonCallback("pythonCallback")
+
+    main.memoryProxy.subscribeToEvent("TemperatureStatusChanged", "pythonCallback", "temperatureChanged") 
+    main.memoryProxy.subscribeToEvent("HotDeviceDetected", "pythonCallback", "deviceIsHot") 
+
     try:
-        main = Main("13.81.105.139")
-
-        # Callbacks aanmaken, kan niet in een class
-        pythonCallback = PythonCallback("pythonCallback")
-
-        main.memoryProxy.subscribeToEvent("TemperatureStatusChanged", "pythonCallback", "temperatureChanged") 
-        main.memoryProxy.subscribeToEvent("HotDeviceDetected", "pythonCallback", "deviceIsHot") 
-        pythonCallback.subscribeToFace()
-
         while True:
             time.sleep(1)
 
     
     except KeyboardInterrupt:
         print("keyboardInterrupt")
+
+    except Exception, er:
+        print("ERROR -----> ", er)
 
     finally:
         print("Shutting down")
