@@ -184,9 +184,9 @@ class Sequenties():
         Hand = payload.get("Hand")
         speed = payload.get("speed")
         self.pepperArm.turnArmManually(leftRightArm, ShoulderPitch, ShoulderRoll, ElbowYaw, ElbowRoll, WristYaw, Hand, speed)
-        time.sleep(3)
+        time.sleep(1)
         self.ttsProxy.post.say("boom")
-        time.sleep(2)
+        time.sleep(4)
         self.postureProxy.post.goToPosture("Stand", 0.2)
 
 
@@ -210,9 +210,9 @@ class Sequenties():
         Hand = payload.get("Hand")
         speed = payload.get("speed")
         self.pepperArm.turnArmManually(leftRightArm, ShoulderPitch, ShoulderRoll, ElbowYaw, ElbowRoll, WristYaw, Hand, speed)
-        time.sleep(3)
+        time.sleep(1)
         self.ttsProxy.post.say("high five")
-        time.sleep(2)
+        time.sleep(4)
         self.postureProxy.post.goToPosture("Stand", 0.2)
 
 
