@@ -8,6 +8,7 @@ from Models.PepperWalk import PepperWalk
 from Models.PepperDiagnosis import Diagnosis
 from Models.PepperBehaviors import PepperBehaviors
 from Models.TrackFace import TrackFace
+from Models.Sequenties import Sequenties
 import json
 
 facesDetectedBool = False
@@ -41,6 +42,7 @@ class Main():
         self.diagnosis = Diagnosis(self.diagnosisProxy, self.bodyTemperatureProxy, self.batteryProxy, self.client)
         self.pepperBehaviors = PepperBehaviors(self.BehaviorProxy)
         self.trackFace = TrackFace(self.motionProxy, self.trackerProxy)
+        self.sequenties = Sequenties(pepperArm = self.pepperArm, pepperBody = self.pepperBody, pepperHead = self.pepperHead, postureProxy = self.postureProxy, ttsProxy = self.ttsProxy)
         self.payloadFaceDetected = None
 
         # wakes pepper up and set stiffness on
@@ -263,6 +265,27 @@ class Main():
 
         elif action == "diagnosis":         # stuurt de robot diagnostics door via de /pepper/pub/diagnosis topic
             self.diagnosis.getDiagnosis()
+
+        
+        elif action == "sequentie":
+            chosenSequentie = topic[4]
+            if chosenSequentie == "wave":
+                self.sequenties.wave()
+            
+            elif chosenSequentie == "usainBolt":
+                self.sequenties.usianBolt()
+
+            elif chosenSequentie == "dab":
+                self.sequenties.dab()
+
+            elif chosenSequentie == "box":
+                self.sequenties.box()
+
+            elif chosenSequentie == "highFive":
+                self.sequenties.highFive()
+
+            elif chosenSequentie == "hug":
+                self.sequenties.hug()
 
         
         else:
