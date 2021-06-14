@@ -1,6 +1,10 @@
+import json
+import datetime
+
 class PepperBehaviors:
-    def __init__(self, BehaviorProxy):
+    def __init__(self, BehaviorProxy, client):
         self.BehaviorProxy = BehaviorProxy
+        self.client = client
 
 
     def getBehaviors(self):
@@ -22,7 +26,13 @@ class PepperBehaviors:
             # Check that it is not already running.
             if (not self.BehaviorProxy.isBehaviorRunning(behaviorName)):
                 # Launch behavior.
-                self.BehaviorProxy.post.runBehavior(behaviorName)
+                payloadJson = json.dumps({'startedAt': str(datetime.now()), 'sequence': behaviorName})
+                self.client.publish("robot/pepper/log/sequentieStart", payload=payloadJson, qos=2, retain=False)
+
+                self.BehaviorProxy.runBehavior(behaviorName)
+
+                payloadJson = json.dumps({'finishedAt': str(datetime.now()), 'sequence': behaviorName})
+                self.client.publish("robot/pepper/log/sequentieStop", payload=payloadJson, qos=2, retain=False)
             else:
                 print "Behavior is already running."
 
@@ -34,6 +44,9 @@ class PepperBehaviors:
     def stopBehavior(self, behaviorName):
         # Stop the behavior.
         if (self.BehaviorProxy.isBehaviorRunning(behaviorName)):
+            payloadJson = json.dumps({'finishedAt': str(datetime.now()), 'sequence': behaviorName})
+            self.client.publish("robot/pepper/log/sequentieStop", payload=payloadJson, qos=2, retain=False)
+
             self.BehaviorProxy.stopBehavior(behaviorName)
         else:
             print "Behavior is already stopped."

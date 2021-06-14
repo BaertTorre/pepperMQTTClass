@@ -1,11 +1,38 @@
 import time
+import json
+import datetime
 
 class Sequenties():
     def __init__(self, **kwargs):
         self.__dict__.update(kwargs)
 
+    def choseSequence(self, chosenSequentie):
+        if chosenSequentie == "wave":
+            self.wave()
+            
+        elif chosenSequentie == "usainBolt":
+            self.usainBolt()
+
+        elif chosenSequentie == "dab":
+            self.dab()
+
+        elif chosenSequentie == "box":
+            self.box()
+
+        elif chosenSequentie == "highFive":
+            self.highFive()
+
+        elif chosenSequentie == "hug":
+            self.hug()
+
+        else:
+            print("De opgegeven sequentie bestaat niet")
+
 
     def wave(self):
+        payloadJson = json.dumps({'startedAt': str(datetime.now()), 'sequence': 'wave'})
+        self.client.publish("robot/pepper/log/sequentieStart", payload=payloadJson, qos=2, retain=False)
+
         payload = {
             "leftRightArm": "R",
             "ShoulderPitch": [-60, -60, -60, -60, -60, -60, -60],
@@ -28,10 +55,16 @@ class Sequenties():
         
         self.ttsProxy.post.say("hi there")
         time.sleep(times[-1])       # wacht tot het zwaaien voorbij is
+
+        payloadJson = json.dumps({'finishedAt': str(datetime.now()), 'sequence': 'wave'})
+        self.client.publish("robot/pepper/log/sequentieStop", payload=payloadJson, qos=2, retain=False)
         self.postureProxy.post.goToPosture("Stand", 0.2)
 
     
-    def usianBolt(self):
+    def usainBolt(self):
+        payloadJson = json.dumps({'startedAt': str(datetime.now()), 'sequence': 'usainBolt'})
+        self.client.publish("robot/pepper/log/sequentieStart", payload=payloadJson, qos=2, retain=False)
+
         payload = {
             "leftRightArm": "R",
             "ShoulderPitch": -40,
@@ -92,13 +125,17 @@ class Sequenties():
         speed = payload.get("speed")
         self.pepperBody.turnHipManually(hipRoll, hipPitch, speed)
 
-        time.sleep(4)
-        self.ttsProxy.post.say("yea")
-        time.sleep(1)
+        time.sleep(5)
+
+        payloadJson = json.dumps({'finishedAt': str(datetime.now()), 'sequence': 'usainBolt'})
+        self.client.publish("robot/pepper/log/sequentieStop", payload=payloadJson, qos=2, retain=False)
         self.postureProxy.post.goToPosture("Stand", 0.2)
 
     
     def dab(self):
+        payloadJson = json.dumps({'startedAt': str(datetime.now()), 'sequence': 'dab'})
+        self.client.publish("robot/pepper/log/sequentieStart", payload=payloadJson, qos=2, retain=False)
+
         payload = {
             "leftRightArm": "R",
             "ShoulderPitch": -40,
@@ -161,10 +198,16 @@ class Sequenties():
 
         self.ttsProxy.post.say("yea")
         time.sleep(5)
+
+        payloadJson = json.dumps({'finishedAt': str(datetime.now()), 'sequence': 'dab'})
+        self.client.publish("robot/pepper/log/sequentieStop", payload=payloadJson, qos=2, retain=False)
         self.postureProxy.post.goToPosture("Stand", 0.2)
 
 
     def box(self):
+        payloadJson = json.dumps({'startedAt': str(datetime.now()), 'sequence': 'fist'})
+        self.client.publish("robot/pepper/log/sequentieStart", payload=payloadJson, qos=2, retain=False)
+
         payload = {
             "leftRightArm": "R",
             "ShoulderPitch": 0,
@@ -187,10 +230,16 @@ class Sequenties():
         time.sleep(1)
         self.ttsProxy.post.say("boom")
         time.sleep(4)
+
+        payloadJson = json.dumps({'finishedAt': str(datetime.now()), 'sequence': 'fist'})
+        self.client.publish("robot/pepper/log/sequentieStop", payload=payloadJson, qos=2, retain=False)
         self.postureProxy.post.goToPosture("Stand", 0.2)
 
 
     def highFive(self):
+        payloadJson = json.dumps({'startedAt': str(datetime.now()), 'sequence': 'highfive'})
+        self.client.publish("robot/pepper/log/sequentieStart", payload=payloadJson, qos=2, retain=False)
+
         payload = {
             "leftRightArm": "R",
             "ShoulderPitch": -40,
@@ -213,10 +262,16 @@ class Sequenties():
         time.sleep(1)
         self.ttsProxy.post.say("high five")
         time.sleep(4)
+
+        payloadJson = json.dumps({'finishedAt': str(datetime.now()), 'sequence': 'highfive'})
+        self.client.publish("robot/pepper/log/sequentieStop", payload=payloadJson, qos=2, retain=False)
         self.postureProxy.post.goToPosture("Stand", 0.2)
 
 
     def hug(self):
+        payloadJson = json.dumps({'startedAt': str(datetime.now()), 'sequence': 'hug'})    
+        self.client.publish("robot/pepper/log/sequentieStart", payload=payloadJson, qos=2, retain=False)
+
         payload = {
             "leftRightArm": "R",
             "ShoulderPitch": -10,
@@ -258,4 +313,7 @@ class Sequenties():
         self.pepperArm.turnArmManually(leftRightArm, ShoulderPitch, ShoulderRoll, ElbowYaw, ElbowRoll, WristYaw, Hand, speed)
         self.ttsProxy.post.say("come here baby")
         time.sleep(5)
+
+        payloadJson = json.dumps({'finishedAt': str(datetime.now()), 'sequence': 'hug'})
+        self.client.publish("robot/pepper/log/sequentieStop", payload=payloadJson, qos=2, retain=False)
         self.postureProxy.post.goToPosture("Stand", 0.2)

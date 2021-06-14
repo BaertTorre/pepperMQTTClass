@@ -7,11 +7,11 @@ class TrackFace():
     def startTrackingFace(self, trackerMode, targetName = "Face"):
         # Add target to track.
         faceWidth = 0.1
-        self.trackerProxy.registerTarget(targetName, faceWidth)
+        self.trackerProxy.registerTarget("Face", faceWidth)
         # set mode
         self.trackerProxy.setMode(trackerMode)
         # Then, start tracker.
-        self.trackerProxy.track(targetName)
+        self.trackerProxy.track("Face")
 
         print "ALTracker successfully started, now show your face to robot!"
 
