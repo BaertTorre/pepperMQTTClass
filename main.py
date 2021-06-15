@@ -13,6 +13,7 @@ import json
 import sys
 import os
 
+MQTTBroker = "13.81.105.139"
 facesDetectedBool = False
 
 class Main():
@@ -268,7 +269,7 @@ if __name__ == "__main__":
     # Callbacks aanmaken, kan niet in een class
     pythonCallback = PythonCallback("pythonCallback")
 
-    main = Main("13.81.105.139", client = client, motionProxy = motionProxy, ttsProxy = ttsProxy, postureProxy = postureProxy, diagnosisProxy = diagnosisProxy, navigationProxy = navigationProxy, behaviorProxy = behaviorProxy, memoryProxy = memoryProxy, batteryProxy = batteryProxy, bodyTemperatureProxy = bodyTemperatureProxy, trackerProxy = trackerProxy)
+    main = Main(MQTTBroker, client = client, motionProxy = motionProxy, ttsProxy = ttsProxy, postureProxy = postureProxy, diagnosisProxy = diagnosisProxy, navigationProxy = navigationProxy, behaviorProxy = behaviorProxy, memoryProxy = memoryProxy, batteryProxy = batteryProxy, bodyTemperatureProxy = bodyTemperatureProxy, trackerProxy = trackerProxy)
 
     memoryProxy.subscribeToEvent("TemperatureStatusChanged", "pythonCallback", "temperatureChanged") 
 
