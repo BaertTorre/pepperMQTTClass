@@ -1,11 +1,23 @@
-class PepperWalk:
-    def __init__(self, motionProxy, navigationProxy):
-        self.motionProxy = motionProxy
-        self.navigationProxy = navigationProxy
+class PepperWalk():
+    def __init__(self, **kwargs):
+        self.__dict__.update(kwargs)
 
-    def moveTo(self, xValue, yValue, thetaValue):
-        self.motionProxy.moveInit()
-        self.motionProxy.post.moveTo(xValue, yValue, thetaValue)
+    def moveTo(self, payload):
+        xValue = payload.get("xValue")
+        yValue = payload.get("yValue")
+        thetaValue = payload.get("thetaValue")
 
-    def navigateTo(self, xValue, yValue):
-        self.navigationProxy.post.navigateTo(xValue, yValue)
+        if xValue != None and yValue != None and thetaValue != None:
+            self.motionProxy.moveInit()
+            self.motionProxy.post.moveTo(xValue, yValue, thetaValue)
+        else:
+            print("Geen xValue, yValue en thetaValue payloads")
+
+    def navigateTo(self, payload):
+        xValue = payload.get("xValue")
+        yValue = payload.get("yValue")
+
+        if xValue != None and yValue != None:
+            self.navigationProxy.post.navigateTo(xValue, yValue)
+        else:
+            print("Geen xValue en yValue payloads")

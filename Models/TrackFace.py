@@ -1,7 +1,6 @@
 class TrackFace():
-    def __init__(self, motionProxy, trackerProxy):
-        self.motionProxy = motionProxy
-        self.trackerProxy = trackerProxy
+    def __init__(self, **kwargs):
+        self.__dict__.update(kwargs)
 
 
     def startTrackingFace(self, trackerMode, targetName = "Face"):
@@ -13,7 +12,7 @@ class TrackFace():
         # Then, start tracker.
         self.trackerProxy.track("Face")
 
-        print "ALTracker successfully started, now show your face to robot!"
+        print("ALTracker successfully started, now show your face to robot!")
 
 
     def stopTrackingFace(self):
@@ -21,6 +20,6 @@ class TrackFace():
             # Stop tracker.
             self.trackerProxy.stopTracker()
             self.trackerProxy.unregisterAllTargets()
-            print "ALTracker stopped."
+            print("ALTracker stopped.")
         else:
             print("Tracker is not running")

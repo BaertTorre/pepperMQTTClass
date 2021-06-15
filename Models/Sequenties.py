@@ -1,6 +1,6 @@
 import time
 import json
-import datetime
+from datetime import datetime
 
 class Sequenties():
     def __init__(self, **kwargs):
@@ -43,18 +43,10 @@ class Sequenties():
             "Hand": [60, 60, 60, 60, 60, 60, 60],
             "times": [1, 2, 3, 4, 5, 6, 7]
         }
-        leftRightArm = str(payload.get("leftRightArm"))
-        ShoulderPitch = payload.get("ShoulderPitch")
-        ShoulderRoll = payload.get("ShoulderRoll")
-        ElbowYaw = payload.get("ElbowYaw")
-        ElbowRoll = payload.get("ElbowRoll")
-        WristYaw = payload.get("WristYaw")
-        Hand = payload.get("Hand")
-        times = payload.get("times")
-        self.pepperArm.turnArmInterpolations(leftRightArm, ShoulderPitch, ShoulderRoll, ElbowYaw, ElbowRoll, WristYaw, Hand, times)
+        self.pepperArm.turnArmInterpolations(payload)
         
         self.ttsProxy.post.say("hi there")
-        time.sleep(times[-1])       # wacht tot het zwaaien voorbij is
+        time.sleep(7)       # wacht tot het zwaaien voorbij is
 
         payloadJson = json.dumps({'finishedAt': str(datetime.now()), 'sequence': 'wave'})
         self.client.publish("robot/pepper/log/sequentieStop", payload=payloadJson, qos=2, retain=False)
@@ -75,15 +67,7 @@ class Sequenties():
             "Hand": 50,
             "speed": 0.1
         }
-        leftRightArm = str(payload.get("leftRightArm"))
-        ShoulderPitch = payload.get("ShoulderPitch")
-        ShoulderRoll = payload.get("ShoulderRoll")
-        ElbowYaw = payload.get("ElbowYaw")
-        ElbowRoll = payload.get("ElbowRoll")
-        WristYaw = payload.get("WristYaw")
-        Hand = payload.get("Hand")
-        speed = payload.get("speed")
-        self.pepperArm.turnArmManually(leftRightArm, ShoulderPitch, ShoulderRoll, ElbowYaw, ElbowRoll, WristYaw, Hand, speed)
+        self.pepperArm.turnArmManually(payload)
 
         payload = {
             "leftRightArm": "L",
@@ -95,35 +79,21 @@ class Sequenties():
             "Hand": 50,
             "speed": 0.1
         }
-        leftRightArm = str(payload.get("leftRightArm"))
-        ShoulderPitch = payload.get("ShoulderPitch")
-        ShoulderRoll = payload.get("ShoulderRoll")
-        ElbowYaw = payload.get("ElbowYaw")
-        ElbowRoll = payload.get("ElbowRoll")
-        WristYaw = payload.get("WristYaw")
-        Hand = payload.get("Hand")
-        speed = payload.get("speed")
-        self.pepperArm.turnArmManually(leftRightArm, ShoulderPitch, ShoulderRoll, ElbowYaw, ElbowRoll, WristYaw, Hand, speed)
+        self.pepperArm.turnArmManually(payload)
 
         payload = {
             "angleYaw": 40,
             "anglePitch": -20,
             "speed": 0.1
         }
-        angleYaw = payload.get("angleYaw")
-        anglePitch = payload.get("anglePitch")
-        speed = payload.get("speed")
-        self.pepperHead.turnHeadManually(angleYaw, anglePitch, speed)
+        self.pepperHead.turnHeadManually(payload)
 
         payload = {
             "hipPitch": 10,
             "hipRoll": -15,
             "speed": 0.1
         }
-        hipPitch = payload.get("hipPitch")
-        hipRoll = payload.get("hipRoll")
-        speed = payload.get("speed")
-        self.pepperBody.turnHipManually(hipRoll, hipPitch, speed)
+        self.pepperBody.turnHipManually(payload)
 
         time.sleep(5)
 
@@ -146,15 +116,7 @@ class Sequenties():
             "Hand": 50,
             "speed": 1
         }
-        leftRightArm = str(payload.get("leftRightArm"))
-        ShoulderPitch = payload.get("ShoulderPitch")
-        ShoulderRoll = payload.get("ShoulderRoll")
-        ElbowYaw = payload.get("ElbowYaw")
-        ElbowRoll = payload.get("ElbowRoll")
-        WristYaw = payload.get("WristYaw")
-        Hand = payload.get("Hand")
-        speed = payload.get("speed")
-        self.pepperArm.turnArmManually(leftRightArm, ShoulderPitch, ShoulderRoll, ElbowYaw, ElbowRoll, WristYaw, Hand, speed)
+        self.pepperArm.turnArmManually(payload)
 
         payload = {
             "leftRightArm": "L",
@@ -166,35 +128,21 @@ class Sequenties():
             "Hand": 50,
             "speed": 1
         }
-        leftRightArm = str(payload.get("leftRightArm"))
-        ShoulderPitch = payload.get("ShoulderPitch")
-        ShoulderRoll = payload.get("ShoulderRoll")
-        ElbowYaw = payload.get("ElbowYaw")
-        ElbowRoll = payload.get("ElbowRoll")
-        WristYaw = payload.get("WristYaw")
-        Hand = payload.get("Hand")
-        speed = payload.get("speed")
-        self.pepperArm.turnArmManually(leftRightArm, ShoulderPitch, ShoulderRoll, ElbowYaw, ElbowRoll, WristYaw, Hand, speed)
+        self.pepperArm.turnArmManually(payload)
 
         payload = {
             "angleYaw": -40,
             "anglePitch": 30,
             "speed": 0.3
         }
-        angleYaw = payload.get("angleYaw")
-        anglePitch = payload.get("anglePitch")
-        speed = payload.get("speed")
-        self.pepperHead.turnHeadManually(angleYaw, anglePitch, speed)
+        self.pepperHead.turnHeadManually(payload)
 
         payload = {
             "hipPitch": -30,
             "hipRoll": -10,
             "speed": 0.5
         }
-        hipPitch = payload.get("hipPitch")
-        hipRoll = payload.get("hipRoll")
-        speed = payload.get("speed")
-        self.pepperBody.turnHipManually(hipRoll, hipPitch, speed)
+        self.pepperBody.turnHipManually(payload)
 
         self.ttsProxy.post.say("yea")
         time.sleep(5)
@@ -218,15 +166,7 @@ class Sequenties():
             "Hand": 0,
             "speed": 0.3
         }
-        leftRightArm = str(payload.get("leftRightArm"))
-        ShoulderPitch = payload.get("ShoulderPitch")
-        ShoulderRoll = payload.get("ShoulderRoll")
-        ElbowYaw = payload.get("ElbowYaw")
-        ElbowRoll = payload.get("ElbowRoll")
-        WristYaw = payload.get("WristYaw")
-        Hand = payload.get("Hand")
-        speed = payload.get("speed")
-        self.pepperArm.turnArmManually(leftRightArm, ShoulderPitch, ShoulderRoll, ElbowYaw, ElbowRoll, WristYaw, Hand, speed)
+        self.pepperArm.turnArmManually(payload)
         time.sleep(1)
         self.ttsProxy.post.say("boom")
         time.sleep(4)
@@ -250,15 +190,7 @@ class Sequenties():
             "Hand": 50,
             "speed": 0.3
         }
-        leftRightArm = str(payload.get("leftRightArm"))
-        ShoulderPitch = payload.get("ShoulderPitch")
-        ShoulderRoll = payload.get("ShoulderRoll")
-        ElbowYaw = payload.get("ElbowYaw")
-        ElbowRoll = payload.get("ElbowRoll")
-        WristYaw = payload.get("WristYaw")
-        Hand = payload.get("Hand")
-        speed = payload.get("speed")
-        self.pepperArm.turnArmManually(leftRightArm, ShoulderPitch, ShoulderRoll, ElbowYaw, ElbowRoll, WristYaw, Hand, speed)
+        self.pepperArm.turnArmManually(payload)
         time.sleep(1)
         self.ttsProxy.post.say("high five")
         time.sleep(4)
@@ -282,15 +214,7 @@ class Sequenties():
             "Hand": 50,
             "speed": 0.1
         }
-        leftRightArm = str(payload.get("leftRightArm"))
-        ShoulderPitch = payload.get("ShoulderPitch")
-        ShoulderRoll = payload.get("ShoulderRoll")
-        ElbowYaw = payload.get("ElbowYaw")
-        ElbowRoll = payload.get("ElbowRoll")
-        WristYaw = payload.get("WristYaw")
-        Hand = payload.get("Hand")
-        speed = payload.get("speed")
-        self.pepperArm.turnArmManually(leftRightArm, ShoulderPitch, ShoulderRoll, ElbowYaw, ElbowRoll, WristYaw, Hand, speed)
+        self.pepperArm.turnArmManually(payload)
         
         payload = {
             "leftRightArm": "L",
@@ -302,15 +226,7 @@ class Sequenties():
             "Hand": 50,
             "speed": 0.1
         }
-        leftRightArm = str(payload.get("leftRightArm"))
-        ShoulderPitch = payload.get("ShoulderPitch")
-        ShoulderRoll = payload.get("ShoulderRoll")
-        ElbowYaw = payload.get("ElbowYaw")
-        ElbowRoll = payload.get("ElbowRoll")
-        WristYaw = payload.get("WristYaw")
-        Hand = payload.get("Hand")
-        speed = payload.get("speed")
-        self.pepperArm.turnArmManually(leftRightArm, ShoulderPitch, ShoulderRoll, ElbowYaw, ElbowRoll, WristYaw, Hand, speed)
+        self.pepperArm.turnArmManually(payload)
         self.ttsProxy.post.say("come here baby")
         time.sleep(5)
 

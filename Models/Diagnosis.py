@@ -1,24 +1,24 @@
 import json
 
-class Diagnosis:
-    def __init__(self, diagnosisProxy, bodyTemperatureProxy, batteryProxy, client):
-        self.diagnosisProxy = diagnosisProxy
-        self.bodyTemperatureProxy = bodyTemperatureProxy
+class Diagnosis():
+    def __init__(self, **kwargs):
+        self.__dict__.update(kwargs)
 
     def getDiagnosis(self):
-        payloadPassive = self.diagnosisProxy.getPassiveDiagnosis()
-        payloadActive = self.diagnosisProxy.getActiveDiagnosis()
-        payloadJson = '{ "passiveDiagnosis": ' + '"' + str(payloadPassive) + '"' + ', "activeDiagnosis": ' + '"' + str(payloadActive) + '"' + '}'
+        payloadJson = json.dumps({
+            'passiveDiagnosis': self.diagnosisProxy.getPassiveDiagnosis(),
+            'activeDiagnosis': self.diagnosisProxy.getActiveDiagnosis()
+        })
         self.client.publish("pepper/pub/diagnosis", payload=payloadJson, qos=2, retain=False)
         print(payloadJson)
 
     def getTemperature(self):
-        payloadJson = '{ "bodyTemperature": ' + str(self.bodyTemperatureProxy.getTemperatureDiagnosis()) + '}'
+        payloadJson = json.dumps({'temperature': self.bodyTemperatureProxy.getTemperatureDiagnosis()})
         print(payloadJson)
         self.client.publish("pepper/pub/temperature", payload=payloadJson, qos=2, retain=False)
 
     def getBattery(self):
-        payloadJson = '{ "batteryCharge": ' + str(self.batteryProxy.getBatteryCharge()) + '}'
+        payloadJson = json.dumps({'batteryCharge': self.batteryProxy.getBatteryCharge()})
         print(payloadJson)
         self.client.publish("pepper/pub/battery", payload=payloadJson, qos=2, retain=False)
 
@@ -29,4 +29,5 @@ class Diagnosis:
             'passiveDiagnosis': self.diagnosisProxy.getPassiveDiagnosis(),
             'activeDiagnosis': self.diagnosisProxy.getActiveDiagnosis()
         })
+        print(payloadJson)
         return payloadJson

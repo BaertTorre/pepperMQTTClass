@@ -13,36 +13,23 @@ import json
 
 facesDetectedBool = False
 
-class Main(PepperArm, PepperBehaviors, PepperBody, Diagnosis, PepperHead, Sequenties, TrackFace):
-    def __init__(self, MQTTbrokerIp, MQTTbrokerPort=1883):
-        # ------------------------------------------------------------------------- NAOqi -------------------------------------------------------------
-        # Proxys maken van de naoqi api
-        self.brokerProxy = ALBroker("pythonBroker", "0.0.0.0", 0, "127.0.0.1", 9559)
-        # ip en poort moeten niet meer gebruikt worden omdat we ALBroker gebruiken
-        self.motionProxy = ALProxy("ALMotion")
-        self.ttsProxy = ALProxy("ALTextToSpeech")
-        self.postureProxy = ALProxy("ALRobotPosture")
-        self.diagnosisProxy = ALProxy("ALDiagnosis")
-        self.navigationProxy = ALProxy("ALNavigation")
-        self.BehaviorProxy = ALProxy("ALBehaviorManager")
-        self.memoryProxy = ALProxy("ALMemory")
-        self.batteryProxy = ALProxy("ALBattery")
-        self.bodyTemperatureProxy = ALProxy("ALBodyTemperature")
-        self.trackerProxy = ALProxy("ALTracker")
+class Main():
+    def __init__(self, MQTTbrokerIp, **kwargs):
+        self.__dict__.update(**kwargs)
         
-
         # --------------------------------------------------------------- start program ------------------------------
-        self.start_MQTT(MQTTbrokerIp, MQTTbrokerPort)
+        self.start_MQTT(MQTTbrokerIp, 1883)
 
-        # alle klassen starten
-        self.pepperHead = PepperHead(self.motionProxy)
-        self.pepperBody = PepperBody(self.motionProxy)
-        self.pepperArm = PepperArm(self.motionProxy)
-        self.pepperWalk = PepperWalk(self.motionProxy, self.navigationProxy)
-        self.diagnosis = Diagnosis(self.diagnosisProxy, self.bodyTemperatureProxy, self.batteryProxy, self.client)
-        self.pepperBehaviors = PepperBehaviors(self.BehaviorProxy , self.client)
-        self.trackFace = TrackFace(self.motionProxy, self.trackerProxy)
-        self.sequenties = Sequenties(client = self.client, pepperArm = self.pepperArm, pepperBody = self.pepperBody, pepperHead = self.pepperHead, postureProxy = self.postureProxy, ttsProxy = self.ttsProxy)
+        # alle classes starten
+        self.pepperHead = PepperHead(**kwargs)
+        self.pepperBody = PepperBody(**kwargs)
+        self.pepperArm = PepperArm(**kwargs)
+        self.pepperWalk = PepperWalk(**kwargs)
+        self.diagnosis = Diagnosis(**kwargs)
+        self.pepperBehaviors = PepperBehaviors(**kwargs)
+        self.trackFace = TrackFace(**kwargs)
+        self.sequenties = Sequenties(pepperHead = self.pepperHead, pepperBody = self.pepperBody, pepperArm = self.pepperArm, **kwargs)
+
         self.payloadFaceDetected = None
 
         # wakes pepper up and set stiffness on
@@ -52,7 +39,6 @@ class Main(PepperArm, PepperBehaviors, PepperBody, Diagnosis, PepperHead, Sequen
 
     # --------------------------------------------------------------- MQTT -----------------------------------------------------------------    
     def start_MQTT(self, MQTTbrokerIp, MQTTbrokerPort):
-        self.client = mqttClient.Client()  # create new instance
         self.client.on_connect = self.on_connect  # attach function to callback
         self.client.on_message = self.on_message
         # connect to broker
@@ -127,6 +113,7 @@ class Main(PepperArm, PepperBehaviors, PepperBody, Diagnosis, PepperHead, Sequen
 
             elif action == "detectFaceStop":
                 self.memoryProxy.unsubscribeToEvent("FaceDetected", "pythonCallback")
+                self.postureProxy.goToPosture("Stand", 0.2)
 
 
             elif action == "startFollowMode":
@@ -161,117 +148,47 @@ class Main(PepperArm, PepperBehaviors, PepperBody, Diagnosis, PepperHead, Sequen
 
 
             elif action == "moveTo":            # ga naar een locatie, ZONDER object avoidance
-                xValue = payload.get("xValue")
-                yValue = payload.get("yValue")
-                thetaValue = payload.get("thetaValue")
-                print(thetaValue)
-                if xValue != None and yValue != None and thetaValue != None:
-                    self.pepperWalk.moveTo(xValue, yValue, thetaValue)
-                else:
-                    print("Geen xValue, yValue en thetaValue payloads")
+                self.pepperWalk.moveTo(payload)
 
 
             elif action == "navigateTo":            # ga naar een locatie, MET object avoidance
-                xValue = payload.get("xValue")
-                yValue = payload.get("yValue")
-                if xValue != None and yValue != None:
-                    self.pepperWalk.navigateTo(xValue, yValue)
-                else:
-                    print("Geen xValue en yValue payloads")
+                self.pepperWalk.navigateTo(payload)
+                
 
             elif action == "defaultStand":            # ga naar zijn default stand
                 self.postureProxy.post.goToPosture("Stand", 0.2)
 
 
             elif action == "moveHeadManually":      # de head joints aansturen
-                angleYaw = payload.get("angleYaw")
-                anglePitch = payload.get("anglePitch")
-                speed = payload.get("speed")
-                if speed and (angleYaw != None or anglePitch != None):
-                    self.pepperHead.turnHeadManually(angleYaw, anglePitch, speed)
-                else:
-                    print("Geen speed en angleYaw of anglePitch payload")
+                self.pepperHead.turnHeadManually(payload)
 
 
             elif action == "turnHeadInterpolations":      # de head joints aansturen
-                angleYaw = payload.get("angleYaw")
-                anglePitch = payload.get("anglePitch")
-                times = payload.get("times")
-                if times and (angleYaw != None or anglePitch != None):
-                    self.pepperHead.turnHeadInterpolations(
-                        angleYaw, anglePitch, times)
-                else:
-                    print("Geen times en angleYaw of anglePitch payload")
+                self.pepperHead.turnHeadInterpolations(payload)
 
 
             elif action == "moveHipManually":       # de heup joints aansturen
-                hipPitch = payload.get("hipPitch")
-                hipRoll = payload.get("hipRoll")
-                speed = payload.get("speed")
-                if speed and (hipPitch != None or hipRoll != None):
-                    self.pepperBody.turnHipManually(hipRoll, hipPitch, speed)
-                else:
-                    print("Geen speed en hipPitch of hipRoll payload")
+                self.pepperBody.turnHipManually(payload)
 
 
             elif action == "moveHipInterpolations":       # de heup joints aansturen
-                hipPitch = payload.get("hipPitch")
-                hipRoll = payload.get("hipRoll")
-                times = payload.get("times")
-                if times and (hipPitch != None or hipRoll != None):
-                    self.pepperBody.turnHipInterpolations(hipRoll, hipPitch, times)
-                else:
-                    print("Geen times en hipPitch of hipRoll payload")
+                self.pepperBody.turnHipInterpolations(payload)
 
 
             elif action == "moveKneeManually":      # de knie joint aansturen
-                kneePitch = payload.get("kneePitch")
-                speed = payload.get("speed")
-                if speed and (kneePitch != None):
-                    self.pepperBody.turnKneeManually(kneePitch, speed)
-                else:
-                    print("Geen speed en kneePitch payload")
+                self.pepperBody.turnKneeManually(payload)
 
 
             elif action == "moveKneeInterpolations":      # de knie joint aansturen
-                kneePitch = payload.get("kneePitch")
-                times = payload.get("times")
-                if times and (kneePitch != None):
-                    self.pepperBody.turnKneeInterpolations(kneePitch, times)
-                else:
-                    print("Geen times en kneePitch payload")
+                self.pepperBody.turnKneeInterpolations(payload)
 
 
             elif action == "moveArmManually":       # de arm & pols joints aansturen
-                leftRightArm = str(payload.get("leftRightArm"))
-                ShoulderPitch = payload.get("ShoulderPitch")
-                ShoulderRoll = payload.get("ShoulderRoll")
-                ElbowYaw = payload.get("ElbowYaw")
-                ElbowRoll = payload.get("ElbowRoll")
-                WristYaw = payload.get("WristYaw")
-                Hand = payload.get("Hand")
-                speed = payload.get("speed")
-                if speed and (leftRightArm != None or ShoulderPitch != None or ShoulderRoll != None or ElbowYaw != None or ElbowRoll != None or WristYaw != None or Hand != None):
-                    self.pepperArm.turnArmManually(
-                        leftRightArm, ShoulderPitch, ShoulderRoll, ElbowYaw, ElbowRoll, WristYaw, Hand, speed)
-                else:
-                    print("Geen speed en ledematen payload")
+                self.pepperArm.turnArmManually(payload)
 
 
             elif action == "turnArmInterpolations":       # de arm & pols joints aansturen
-                leftRightArm = str(payload.get("leftRightArm"))
-                ShoulderPitch = payload.get("ShoulderPitch")
-                ShoulderRoll = payload.get("ShoulderRoll")
-                ElbowYaw = payload.get("ElbowYaw")
-                ElbowRoll = payload.get("ElbowRoll")
-                WristYaw = payload.get("WristYaw")
-                Hand = payload.get("Hand")
-                times = payload.get("times")
-                if times and (leftRightArm != None or ShoulderPitch != None or ShoulderRoll != None or ElbowYaw != None or ElbowRoll != None or WristYaw != None or Hand != None):
-                    self.pepperArm.turnArmInterpolations(
-                        leftRightArm, ShoulderPitch, ShoulderRoll, ElbowYaw, ElbowRoll, WristYaw, Hand, times)
-                else:
-                    print("Geen times en ledematen payload")
+                self.pepperArm.turnArmInterpolations(payload)
 
 
             elif action == "diagnosis":         # stuurt de robot diagnostics door via de /pepper/pub/diagnosis topic
@@ -279,7 +196,7 @@ class Main(PepperArm, PepperBehaviors, PepperBody, Diagnosis, PepperHead, Sequen
 
             
             elif action == "sequentie":
-                chosenSequence = topic[4]
+                chosenSequence = topic[3]
                 self.sequenties.choseSequence(chosenSequence)
 
             
@@ -292,7 +209,7 @@ class Main(PepperArm, PepperBehaviors, PepperBody, Diagnosis, PepperHead, Sequen
 # --------------------------------------------------------------- CALLBACK CLASS -----------------------------------------------
 class PythonCallback(ALModule):
     def temperatureChanged(self, strVarName, value):
-        print "TemperatureChanged, value ---> ", value
+        print ("TemperatureChanged, value ---> ", value)
         
 
     def faceIsDetected(self, *_args):
@@ -321,16 +238,33 @@ class PythonCallback(ALModule):
 
 
 if __name__ == "__main__":
-    main = Main("13.81.105.139")
+    # ------------------------------------------------------------------------- NAOqi -------------------------------------------------------------
+    # Proxys maken van de naoqi api
+    brokerProxy = ALBroker("pythonBroker", "0.0.0.0", 0, "127.0.0.1", 9559)
+    # ip en poort moeten niet meer gebruikt worden omdat we ALBroker gebruiken
+    motionProxy = ALProxy("ALMotion")
+    ttsProxy = ALProxy("ALTextToSpeech")
+    postureProxy = ALProxy("ALRobotPosture")
+    diagnosisProxy = ALProxy("ALDiagnosis")
+    navigationProxy = ALProxy("ALNavigation")
+    behaviorProxy = ALProxy("ALBehaviorManager")
+    memoryProxy = ALProxy("ALMemory")
+    batteryProxy = ALProxy("ALBattery")
+    bodyTemperatureProxy = ALProxy("ALBodyTemperature")
+    trackerProxy = ALProxy("ALTracker")
+
+    client = mqttClient.Client()  # create new instance
+
+    main = Main("13.81.105.139", client = client, motionProxy = motionProxy, ttsProxy = ttsProxy, postureProxy = postureProxy, diagnosisProxy = diagnosisProxy, navigationProxy = navigationProxy, behaviorProxy = behaviorProxy, memoryProxy = memoryProxy, batteryProxy = batteryProxy, bodyTemperatureProxy = bodyTemperatureProxy, trackerProxy = trackerProxy)
     # Callbacks aanmaken, kan niet in een class
 
     pythonCallback = PythonCallback("pythonCallback")
 
-    main.memoryProxy.subscribeToEvent("TemperatureStatusChanged", "pythonCallback", "temperatureChanged") 
+    memoryProxy.subscribeToEvent("TemperatureStatusChanged", "pythonCallback", "temperatureChanged") 
 
     try:
         while True:
-            time.sleep(1)
+            time.sleep(0.1)
 
     
     except KeyboardInterrupt:
@@ -345,6 +279,6 @@ if __name__ == "__main__":
         main.trackFace.stopTrackingFace()
         main.client.disconnect()
         main.client.loop_stop()
-        main.brokerProxy.shutdown()
+        brokerProxy.shutdown()
         # sets pepper to rest position with stiffness off
         # main.motionProxy.rest()
