@@ -28,7 +28,7 @@ class PepperBehaviors():
                 payloadJson = json.dumps({'startedAt': str(datetime.now()), 'sequence': behaviorName})
                 self.client.publish("robot/pepper/log/sequentieStart", payload=payloadJson, qos=2, retain=False)
 
-                self.behaviorProxy.runBehavior(behaviorName)
+                self.behaviorProxy.post.runBehavior(behaviorName)
 
                 payloadJson = json.dumps({'finishedAt': str(datetime.now()), 'sequence': behaviorName})
                 self.client.publish("robot/pepper/log/sequentieStop", payload=payloadJson, qos=2, retain=False)
@@ -47,5 +47,6 @@ class PepperBehaviors():
             self.client.publish("robot/pepper/log/sequentieStop", payload=payloadJson, qos=2, retain=False)
 
             self.behaviorProxy.stopBehavior(behaviorName)
+            self.postureProxy.goToPosture("Stand", 0.2)
         else:
             print("Behavior is already stopped.")

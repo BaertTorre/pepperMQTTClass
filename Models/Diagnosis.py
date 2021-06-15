@@ -25,9 +25,8 @@ class Diagnosis():
     def getLogs(self):
         payloadJson = json.dumps({
             'batteryCharge': self.batteryProxy.getBatteryCharge(),
-            'temperature': self.bodyTemperatureProxy.getTemperatureDiagnosis(),
             'passiveDiagnosis': self.diagnosisProxy.getPassiveDiagnosis(),
             'activeDiagnosis': self.diagnosisProxy.getActiveDiagnosis()
         })
-        print(payloadJson)
+        # print(payloadJson)
         return payloadJson

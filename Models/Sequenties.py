@@ -31,7 +31,7 @@ class Sequenties():
 
     def wave(self):
         payloadJson = json.dumps({'startedAt': str(datetime.now()), 'sequence': 'wave'})
-        self.client.publish("robot/pepper/log/sequentieStart", payload=payloadJson, qos=2, retain=False)
+        self.client.publish("robot/pepper/logs/sequentieStart", payload=payloadJson, qos=2, retain=False)
 
         payload = {
             "leftRightArm": "R",
@@ -49,13 +49,13 @@ class Sequenties():
         time.sleep(7)       # wacht tot het zwaaien voorbij is
 
         payloadJson = json.dumps({'finishedAt': str(datetime.now()), 'sequence': 'wave'})
-        self.client.publish("robot/pepper/log/sequentieStop", payload=payloadJson, qos=2, retain=False)
+        self.client.publish("robot/pepper/logs/sequentieStop", payload=payloadJson, qos=2, retain=False)
         self.postureProxy.post.goToPosture("Stand", 0.2)
 
     
     def usainBolt(self):
         payloadJson = json.dumps({'startedAt': str(datetime.now()), 'sequence': 'usainBolt'})
-        self.client.publish("robot/pepper/log/sequentieStart", payload=payloadJson, qos=2, retain=False)
+        self.client.publish("robot/pepper/logs/sequentieStart", payload=payloadJson, qos=2, retain=False)
 
         payload = {
             "leftRightArm": "R",
@@ -98,13 +98,13 @@ class Sequenties():
         time.sleep(5)
 
         payloadJson = json.dumps({'finishedAt': str(datetime.now()), 'sequence': 'usainBolt'})
-        self.client.publish("robot/pepper/log/sequentieStop", payload=payloadJson, qos=2, retain=False)
+        self.client.publish("robot/pepper/logs/sequentieStop", payload=payloadJson, qos=2, retain=False)
         self.postureProxy.post.goToPosture("Stand", 0.2)
 
     
     def dab(self):
         payloadJson = json.dumps({'startedAt': str(datetime.now()), 'sequence': 'dab'})
-        self.client.publish("robot/pepper/log/sequentieStart", payload=payloadJson, qos=2, retain=False)
+        self.client.publish("robot/pepper/logs/sequentieStart", payload=payloadJson, qos=2, retain=False)
 
         payload = {
             "leftRightArm": "R",
@@ -148,13 +148,13 @@ class Sequenties():
         time.sleep(5)
 
         payloadJson = json.dumps({'finishedAt': str(datetime.now()), 'sequence': 'dab'})
-        self.client.publish("robot/pepper/log/sequentieStop", payload=payloadJson, qos=2, retain=False)
+        self.client.publish("robot/pepper/logs/sequentieStop", payload=payloadJson, qos=2, retain=False)
         self.postureProxy.post.goToPosture("Stand", 0.2)
 
 
     def box(self):
         payloadJson = json.dumps({'startedAt': str(datetime.now()), 'sequence': 'fist'})
-        self.client.publish("robot/pepper/log/sequentieStart", payload=payloadJson, qos=2, retain=False)
+        self.client.publish("robot/pepper/logs/sequentieStart", payload=payloadJson, qos=2, retain=False)
 
         payload = {
             "leftRightArm": "R",
@@ -172,13 +172,13 @@ class Sequenties():
         time.sleep(4)
 
         payloadJson = json.dumps({'finishedAt': str(datetime.now()), 'sequence': 'fist'})
-        self.client.publish("robot/pepper/log/sequentieStop", payload=payloadJson, qos=2, retain=False)
+        self.client.publish("robot/pepper/logs/sequentieStop", payload=payloadJson, qos=2, retain=False)
         self.postureProxy.post.goToPosture("Stand", 0.2)
 
 
     def highFive(self):
         payloadJson = json.dumps({'startedAt': str(datetime.now()), 'sequence': 'highfive'})
-        self.client.publish("robot/pepper/log/sequentieStart", payload=payloadJson, qos=2, retain=False)
+        self.client.publish("robot/pepper/logs/sequentieStart", payload=payloadJson, qos=2, retain=False)
 
         payload = {
             "leftRightArm": "R",
@@ -196,13 +196,13 @@ class Sequenties():
         time.sleep(4)
 
         payloadJson = json.dumps({'finishedAt': str(datetime.now()), 'sequence': 'highfive'})
-        self.client.publish("robot/pepper/log/sequentieStop", payload=payloadJson, qos=2, retain=False)
+        self.client.publish("robot/pepper/logs/sequentieStop", payload=payloadJson, qos=2, retain=False)
         self.postureProxy.post.goToPosture("Stand", 0.2)
 
 
     def hug(self):
         payloadJson = json.dumps({'startedAt': str(datetime.now()), 'sequence': 'hug'})    
-        self.client.publish("robot/pepper/log/sequentieStart", payload=payloadJson, qos=2, retain=False)
+        self.client.publish("robot/pepper/logs/sequentieStart", payload=payloadJson, qos=2, retain=False)
 
         payload = {
             "leftRightArm": "R",
@@ -231,5 +231,5 @@ class Sequenties():
         time.sleep(5)
 
         payloadJson = json.dumps({'finishedAt': str(datetime.now()), 'sequence': 'hug'})
-        self.client.publish("robot/pepper/log/sequentieStop", payload=payloadJson, qos=2, retain=False)
+        self.client.publish("robot/pepper/logs/sequentieStop", payload=payloadJson, qos=2, retain=False)
         self.postureProxy.post.goToPosture("Stand", 0.2)

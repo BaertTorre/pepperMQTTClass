@@ -10,6 +10,8 @@ from Models.PepperBehaviors import PepperBehaviors
 from Models.TrackFace import TrackFace
 from Models.Sequenties import Sequenties
 import json
+import sys
+import os
 
 facesDetectedBool = False
 
@@ -63,153 +65,161 @@ class Main():
         try:
             if msg.payload:
                 payload = json.loads(msg.payload)
-                print(msg.topic + " " + str(msg.qos) + " " + str(payload))
             else:
-                print(msg.topic + " " + str(msg.qos))
-                msg.payload = None
+                payload = None
         except Exception, er:
             print("AN ERROR HAS OCCURED IN THE JSON FUNCTION -----------> " + er)
 
-        if msg.topic == 'pepper/logs':
-            logs = self.diagnosis.getLogs()
-            self.client.publish("robot/pepper/logs", payload=logs, qos=2, retain=False)
+        
+        try:
+            if msg.topic == 'pepper/logs':
+                logs = self.diagnosis.getLogs()
+                self.client.publish("robot/pepper/logs", payload=logs, qos=2, retain=False)
 
-
-        else:
-            topic = msg.topic.split("/")
-            action = topic[2]
-
-            # -------------------- actions -------------------
-            if action == "speak":               # lees de payload voor
-                if payload.get("speak"):
-                    self.ttsProxy.post.say(str(payload.get("speak")))
-                else:
-                    print("Geen speak payload")
-
-
-            elif action == "getBattery":
-                self.diagnosis.getBattery()
-
-
-            elif action == "rest":
-                self.motionProxy.rest()
-
-
-            elif action == "wakeUp":
-                self.motionProxy.wakeUp()
-
-
-            elif action == "getTemperature":
-                self.diagnosis.getTemperature()     # stuurt de temperatuur door naar de /pepper/pub/temperature topic
-
-
-            elif action == "detectFaceStart":
-                if payload.get("speak") and payload.get("sequence"):
-                    self.payloadFaceDetected = payload          # payload opslaan zodat hij dat later in de callback class kan gebruiken
-                    self.memoryProxy.subscribeToEvent("FaceDetected", "pythonCallback", "faceIsDetected")            
-                else:
-                    print("Geen speak of sequence payload")
-
-
-            elif action == "detectFaceStop":
-                self.memoryProxy.unsubscribeToEvent("FaceDetected", "pythonCallback")
-                self.postureProxy.goToPosture("Stand", 0.2)
-
-
-            elif action == "startFollowMode":
-                if payload.get("trackerMode"):          # 3 follow modes: Head, WholeBody, Move
-                    self.trackFace.startTrackingFace(str(payload.get("trackerMode")), str(payload.get("targetName")))
-                else:                                   # targetName: Face of RedBall
-                    print("Geen trackerMode payload")
-
-
-            elif action == "stopFollowMode":
-                self.trackFace.stopTrackingFace()
-
-
-            elif action == "getBehaviors":
-                self.pepperBehaviors.getBehaviors()
-
-
-            elif action == "launchBehavior":
-                if payload.get("behaviorName"):
-                    self.pepperBehaviors.launchBehavior(
-                        str(payload.get("behaviorName")))
-                else:
-                    print("Geen behaviorName payload")
-
-
-            elif action == "stopBehavior":
-                if payload.get("behaviorName"):
-                    self.pepperBehaviors.stopBehavior(
-                        str(payload.get("behaviorName")))
-                else:
-                    print("Geen behaviorName payload")
-
-
-            elif action == "moveTo":            # ga naar een locatie, ZONDER object avoidance
-                self.pepperWalk.moveTo(payload)
-
-
-            elif action == "navigateTo":            # ga naar een locatie, MET object avoidance
-                self.pepperWalk.navigateTo(payload)
-                
-
-            elif action == "defaultStand":            # ga naar zijn default stand
-                self.postureProxy.post.goToPosture("Stand", 0.2)
-
-
-            elif action == "moveHeadManually":      # de head joints aansturen
-                self.pepperHead.turnHeadManually(payload)
-
-
-            elif action == "turnHeadInterpolations":      # de head joints aansturen
-                self.pepperHead.turnHeadInterpolations(payload)
-
-
-            elif action == "moveHipManually":       # de heup joints aansturen
-                self.pepperBody.turnHipManually(payload)
-
-
-            elif action == "moveHipInterpolations":       # de heup joints aansturen
-                self.pepperBody.turnHipInterpolations(payload)
-
-
-            elif action == "moveKneeManually":      # de knie joint aansturen
-                self.pepperBody.turnKneeManually(payload)
-
-
-            elif action == "moveKneeInterpolations":      # de knie joint aansturen
-                self.pepperBody.turnKneeInterpolations(payload)
-
-
-            elif action == "moveArmManually":       # de arm & pols joints aansturen
-                self.pepperArm.turnArmManually(payload)
-
-
-            elif action == "turnArmInterpolations":       # de arm & pols joints aansturen
-                self.pepperArm.turnArmInterpolations(payload)
-
-
-            elif action == "diagnosis":         # stuurt de robot diagnostics door via de /pepper/pub/diagnosis topic
-                self.diagnosis.getDiagnosis()
-
-            
-            elif action == "sequentie":
-                chosenSequence = topic[3]
-                self.sequenties.choseSequence(chosenSequence)
-
-            
             else:
-                print("Topic bestaat niet")
+                print(msg.topic + " " + str(msg.qos) + " " + str(payload))
+                topic = msg.topic.split("/")
+                action = topic[2]
 
+                # -------------------- actions -------------------
+                if action == "speak":               # lees de payload voor
+                    if payload.get("speak"):
+                        self.ttsProxy.post.say(str(payload.get("speak")))
+                    else:
+                        print("Geen speak payload")
+
+
+                elif action == "getBattery":
+                    self.diagnosis.getBattery()
+
+
+                elif action == "rest":
+                    self.motionProxy.rest()
+
+
+                elif action == "wakeUp":
+                    self.motionProxy.wakeUp()
+
+
+                elif action == "getTemperature":
+                    self.diagnosis.getTemperature()     # stuurt de temperatuur door naar de /pepper/pub/temperature topic
+
+
+                elif action == "detectFaceStart":
+                    if payload.get("speak") and payload.get("sequence"):
+                        self.payloadFaceDetected = payload          # payload opslaan zodat hij dat later in de callback class kan gebruiken
+                        self.memoryProxy.subscribeToEvent("FaceDetected", "pythonCallback", "faceIsDetected")            
+                    else:
+                        print("Geen speak of sequence payload")
+
+
+                elif action == "detectFaceStop":
+                    self.memoryProxy.unsubscribeToEvent("FaceDetected", "pythonCallback")
+                    self.postureProxy.goToPosture("Stand", 0.2)
+
+
+                elif action == "startFollowMode":
+                    if payload.get("trackerMode"):          # 3 follow modes: Head, WholeBody, Move
+                        self.trackFace.startTrackingFace(str(payload.get("trackerMode")), str(payload.get("targetName")))
+                    else:                                   # targetName: Face of RedBall
+                        print("Geen trackerMode payload")
+
+
+                elif action == "stopFollowMode":
+                    self.trackFace.stopTrackingFace()
+                    self.postureProxy.goToPosture("Stand", 0.2)
+
+
+                elif action == "getBehaviors":
+                    self.pepperBehaviors.getBehaviors()
+
+
+                elif action == "launchBehavior":
+                    if payload.get("behaviorName"):
+                        print("starting behavior")
+                        self.pepperBehaviors.launchBehavior(
+                            str(payload.get("behaviorName")))
+                    else:
+                        print("Geen behaviorName payload")
+
+
+                elif action == "stopBehavior":
+                    if payload.get("behaviorName"):
+                        print("Stopping behavior")
+                        self.pepperBehaviors.stopBehavior(str(payload.get("behaviorName")))
+                    else:
+                        print("Geen behaviorName payload")
+
+
+                elif action == "moveTo":            # ga naar een locatie, ZONDER object avoidance
+                    self.pepperWalk.moveTo(payload)
+
+
+                elif action == "navigateTo":            # ga naar een locatie, MET object avoidance
+                    self.pepperWalk.navigateTo(payload)
+                    
+
+                elif action == "defaultStand":            # ga naar zijn default stand
+                    self.postureProxy.post.goToPosture("Stand", 0.2)
+
+
+                elif action == "moveHeadManually":      # de head joints aansturen
+                    self.pepperHead.turnHeadManually(payload)
+
+
+                elif action == "turnHeadInterpolations":      # de head joints aansturen
+                    self.pepperHead.turnHeadInterpolations(payload)
+
+
+                elif action == "moveHipManually":       # de heup joints aansturen
+                    self.pepperBody.turnHipManually(payload)
+
+
+                elif action == "moveHipInterpolations":       # de heup joints aansturen
+                    self.pepperBody.turnHipInterpolations(payload)
+
+
+                elif action == "moveKneeManually":      # de knie joint aansturen
+                    self.pepperBody.turnKneeManually(payload)
+
+
+                elif action == "moveKneeInterpolations":      # de knie joint aansturen
+                    self.pepperBody.turnKneeInterpolations(payload)
+
+
+                elif action == "moveArmManually":       # de arm & pols joints aansturen
+                    self.pepperArm.turnArmManually(payload)
+
+
+                elif action == "turnArmInterpolations":       # de arm & pols joints aansturen
+                    self.pepperArm.turnArmInterpolations(payload)
+
+
+                elif action == "diagnosis":         # stuurt de robot diagnostics door via de /pepper/pub/diagnosis topic
+                    self.diagnosis.getDiagnosis()
+
+                
+                elif action == "sequentie":
+                    chosenSequence = topic[3]
+                    self.sequenties.choseSequence(chosenSequence)
+
+                
+                else:
+                    print("Topic bestaat niet")
+
+        except Exception, e:
+            exc_type, exc_obj, exc_tb = sys.exc_info()
+            fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+            print("AN ERROR HAS OCCURED WHILE TRYING TO HANDLE THE MQTT MESSAGE -----------> ")
+            print(e, fname, exc_tb.tb_lineno)
     
 
 
 # --------------------------------------------------------------- CALLBACK CLASS -----------------------------------------------
 class PythonCallback(ALModule):
     def temperatureChanged(self, strVarName, value):
-        print ("TemperatureChanged, value ---> ", value)
+        print ("TemperatureChanged, value ---> ", str(value))
+        main.client.publish("robot/pepper/logs/temperature", payload=str(value), qos=2, retain=False)
         
 
     def faceIsDetected(self, *_args):
@@ -255,10 +265,10 @@ if __name__ == "__main__":
 
     client = mqttClient.Client()  # create new instance
 
-    main = Main("13.81.105.139", client = client, motionProxy = motionProxy, ttsProxy = ttsProxy, postureProxy = postureProxy, diagnosisProxy = diagnosisProxy, navigationProxy = navigationProxy, behaviorProxy = behaviorProxy, memoryProxy = memoryProxy, batteryProxy = batteryProxy, bodyTemperatureProxy = bodyTemperatureProxy, trackerProxy = trackerProxy)
     # Callbacks aanmaken, kan niet in een class
-
     pythonCallback = PythonCallback("pythonCallback")
+
+    main = Main("13.81.105.139", client = client, motionProxy = motionProxy, ttsProxy = ttsProxy, postureProxy = postureProxy, diagnosisProxy = diagnosisProxy, navigationProxy = navigationProxy, behaviorProxy = behaviorProxy, memoryProxy = memoryProxy, batteryProxy = batteryProxy, bodyTemperatureProxy = bodyTemperatureProxy, trackerProxy = trackerProxy)
 
     memoryProxy.subscribeToEvent("TemperatureStatusChanged", "pythonCallback", "temperatureChanged") 
 
